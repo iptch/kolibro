@@ -21,4 +21,6 @@ To get started with django the following resources were uses:
 
 If you want to add models to django you have to create a migration: ``python mananage.py makemigration``
 
+Run tests with ``python manage.py test client`` 
+
 
