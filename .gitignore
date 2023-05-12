@@ -143,3 +143,5 @@ cext_cache
 
 # ignore gzipped files
 *.gz
+
+db.sqlite3
