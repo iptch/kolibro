@@ -20,4 +20,5 @@ from django.contrib import admin
 urlpatterns = [
     url(r'^client/', include('client.urls'), name='client'),
     url(r'^admin/', admin.site.urls),
+    url(r'^api/morango/v1/', include('morango.api.urls')),
 ]
