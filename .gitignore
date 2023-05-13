@@ -145,3 +145,4 @@ cext_cache
 *.gz
 
 db.sqlite3
+__pycache__
