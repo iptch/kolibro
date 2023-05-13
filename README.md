@@ -23,6 +23,8 @@ If you want to add models to django you have to create a migration: ``python man
 
 Run tests with ``python manage.py test client`` 
 
+python manage.py migrate --run-syncdb 
+
 ## Integrate Morango
 
 ### Syncable Model

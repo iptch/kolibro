@@ -11,6 +11,7 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
+        ('morango', '0023_add_instance_id_fields'),
     ]
 
     operations = [

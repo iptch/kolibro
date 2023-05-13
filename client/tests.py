@@ -18,8 +18,7 @@ class ClientTests(TestCase):
     
     def test_sync_model(self):
         
-         if not ScopeDefinition.objects.filter():
+        if not ScopeDefinition.objects.filter():
             call_command("loaddata", "scopedefinitions")
             
-        entry = models.SyncEntry.objects.create(name="test")
         self.assertEqual(entry.name, "test")
