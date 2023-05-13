@@ -39,6 +39,10 @@ MorangoProfileController controlls your network communication
 
 ### Calculate Diff
 
+### Authentication 
+
+### Authorization
+
 
 
 
