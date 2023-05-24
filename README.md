@@ -43,7 +43,46 @@ MorangoProfileController controlls your network communication
 
 ### Authentication 
 
+Morango uses certificates to verify the authenticity of exchanging clients
+
+A client opens a connection with two certificates. A client certificate and a remote certificate.
+The client certificate has to signed by the remote certificate.
+
+#### Signing Client
+
+A client can request a signed certificate by another client that is already in the chain of trust. 
+The request contains:
+- The desired remote certificate that should be used to sign.
+  The remote client has to have the private key of the signing certificate.
+- The scope id that should be applied. 
+- The scope parameters to apply to the scope
+- The user arguments in order to authenticate against the other client
+  This is necessary because up to this point you are not identifiable by the other client
+- Password for the user.
+  Currently morango only supports basic auth for this initial certificate signing
+
+#### Distributing Trust
+
+A client can request all owned certificates by another client.
+A client can also push signed certificates in order to distribute signed certificates to other peers. This requires a flag ALLOW_CERTIFICATE_PUSHING to be set.
+
+A client has to have your signed certificate and the singing certifacate before it can trust you.
+
+#### User Model
+
+To establish an initial trust Morange requires a basic authentication with username and password. This mechanism is hooked into django framework. 
+To manage permissions regarding certificate singing a user has to implement a `has_morango_certificates_scope_permission` method.
+
 ### Authorization
+
+#### ScopeDefinitions
+
+
+
+
+Cert exchange
+
+- SyncableModelRegistry
 
 
 

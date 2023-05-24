@@ -1,6 +1,7 @@
 from django.test import TestCase
 from morango.sync.controller import MorangoProfileController
-from morango.models import Certificate
+from morango.models import Certificate, Filter, ScopeDefinition, SharedKey, SyncSession
+from django.test.utils import override_settings
 from . import models
 import os
 import socket
@@ -9,12 +10,18 @@ import time
 import contextlib
 from functools import wraps
 import requests
+import mock
+import json
+import uuid
 
 from django.conf import settings
 from django.test import TestCase
 from django.db import connections
 from requests.exceptions import RequestException
-
+from django.test.testcases import LiveServerTestCase
+from morango.models.certificates import Key
+from morango.api.viewsets import CertificateViewSet
+from morango.apps import syncable_models
 SERVERS = {
     "a": "kolibro.settings",
     "b": "kolibro.settings",
@@ -98,28 +105,50 @@ class PerformanceTest(TestCase):
     
     @Setup()
     def test_stuff(self, servers):
+        a = servers['a']
+        b = servers['b']
         resp = requests.get(servers["a"].baseurl + "/api/morango/v1/morangoinfo/1/", timeout=3)
         self.assertEqual(resp.status_code, 200)
         
         
 
 class ClientTests(TestCase):
-    def test_index(self):
-        response = self.client.get('/client/', allow_redirects=True)
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Hello, world. You're at the kolibro index.")
+    def setUp(self):
+        self.root_cert = Certificate.generate_root_certificate("server")
+        
+        self.subset_cert = Certificate(
+            parent=self.root_cert,
+            profile="default",
+            scope_definition=ScopeDefinition.objects.get(id="server"),
+            scope_version=1,
+            scope_params=json.dumps(
+                {"dataset_id": self.root_cert.id}
+            ),
+            private_key=Key(),
+        )
+        self.root_cert.sign_certificate(self.subset_cert)
+        self.subset_cert.save()
         
     def test_sync_session(self):
         controller = MorangoProfileController("default") # <- This is the profile name defined in kolibro/settings.py
         syncConnection = controller.create_network_connection("http://localhost:8000") # <- This is the URL of the server (you have to start a server)        
 
-        root = Certificate.generate_root_certificate("server")
-        remote_cert = syncConnection.get_remote_certificates(primary_partition="66279388fa5759b6defcd20eeed473c1")[0]
+        remote_cert = syncConnection.get_remote_certificates(primary_partition="3a829e806aac3ccc88cc278155e24011")[0]
+
+        # local = syncConnection.push_signed_client_certificate_chain(root, models.SyncEntry.ScopeDefinitions.SERVER, {})
+        signedRoot = syncConnection.certificate_signing_request(
+            remote_cert, "server", {"dataset_id": remote_cert.id}, userargs={ "username": "smu" }, password="opensource4good"
+        )
+        # syncConnection.push_signed_client_certificate_chain(self.signedRoot, "server", {"dataset_id": "3a829e806aac3ccc88cc278155e24011"})
+        syncSession = syncConnection.create_sync_session(signedRoot, remote_cert)
         
-        syncSession = syncConnection.create_sync_session(root, remote_cert)
+        pull = syncSession.get_pull_client()
+        #push = syncSession.get_push_client()
         
-        syncSession.sync()
+        scope_def = ScopeDefinition.objects.get(id="server")
+        scope = scope_def.get_scope({"dataset_id": remote_cert.id})
         
+        pull.initialize(sync_filter=scope.write_filter)
     
     def test_sync_model(self):
         entry = models.SyncEntry.objects.create(name="test")

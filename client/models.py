@@ -2,10 +2,15 @@ from django.db import models
 from morango.models import SyncableModel
 from morango.models import Certificate
 
+from django.contrib.auth.models import User, AbstractUser
+
 # Create your models here.
 class SyncEntry(SyncableModel):
     
     name = models.CharField(max_length=100)
+    
+    
+    id = models.BinaryField
     
     # SyncEntry model must define a morange_model_name attribute <- SnycableModel
     morango_model_name = "sync_entry"
@@ -36,3 +41,8 @@ class SyncEntry(SyncableModel):
         SERVER = "server"
         CLIENT = "client"
         
+        
+class Bro(AbstractUser):
+
+    def has_morango_certificate_scope_permission(self, scope_definition_id, scope_params):
+        return self.is_superuser

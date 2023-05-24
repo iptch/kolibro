@@ -58,7 +58,6 @@ TEMPLATES = [
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [],
         'APP_DIRS': True,
-        'ALLOW_CERTIFICATE_PUSHING': True,
         'OPTIONS': {
             'context_processors': [
                 'django.template.context_processors.debug',
@@ -122,6 +121,5 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
-# MORANGO SETTINGS
-
 ALLOW_CERTIFICATE_PUSHING = True
+AUTH_USER_MODEL = 'client.Bro'
